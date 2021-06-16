@@ -27,7 +27,9 @@ class Dashboard:
         stock = yf.Ticker(ticker)
         print(stock.history(period='1d', interval='2m'))
         priceArray = stock.history(period='1d',interval='2m')['Close']
-        dateArray = stock.history(period='1d',interval='2m')['DateTime'] #investigate using pandas right here and then graph with matplotlib
+        dateArray = stock.history(period='1d',interval='60m')
+        dateArray.reset_index(inplace=True)
+        print(dateArray["Date"][0]) #investigate using pandas right here and then graph with matplotlib
         priceGraph = self.createGraph(priceArray,dateArray)
         openPrice = stock.history(period='1d')['Open'][0]
         currPrice = stock.history(period='1d')['Close'][0]
