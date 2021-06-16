@@ -1,7 +1,9 @@
 from tkinter import *
+from pandas.core.frame import DataFrame
 import yfinance as yf
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 tickerArray = ['MSFT','DIS','GOOG','GME','AMC','BB','CLF']
 tk = Tk()
@@ -25,16 +27,14 @@ class Dashboard:
     
     def add_ticker(self,index,ticker):   
         stock = yf.Ticker(ticker)
-        print(stock.history(period='1d', interval='2m'))
+        print(stock.history(period='1d', interval='2m').columns)
         priceArray = stock.history(period='1d',interval='2m')['Close']
-        dateArray = stock.history(period='1d',interval='60m')
-        dateArray.reset_index(inplace=True)
-        print(dateArray["Date"][0]) #investigate using pandas right here and then graph with matplotlib
-        priceGraph = self.createGraph(priceArray,dateArray)
-        openPrice = stock.history(period='1d')['Open'][0]
+        print(priceArray)
+        openPrice = stock.history(period='2d', interval='1d')['Close'][0]
+        print(openPrice)
         currPrice = stock.history(period='1d')['Close'][0]
         difference = currPrice - openPrice
-
+        priceGraph = self.createGraph(priceArray,openPrice,index)
         currPriceStr = "${:,.2f}".format(currPrice)
         differenceStr = "${:,.2f}".format(difference)
         tickerName = Label(tk, text = ticker, bg="gray", fg = "white", font=("Helvetica", 30, "bold"))
@@ -74,7 +74,7 @@ class Dashboard:
     def update_ticker_item(self,name,priceLabel,diffLabel):
         stock = yf.Ticker(name["text"])
 
-        openPrice = stock.history(period='1d')['Open'][0]
+        openPrice = stock.history(period='2d',interval='1d')['Close'][0]
         currPrice = stock.history(period='1d')['Close'][0]
         difference = currPrice - openPrice
         percentChange = difference / openPrice * 100
@@ -85,11 +85,16 @@ class Dashboard:
         
         self.set_label_color(priceLabel,diffLabel,difference)
 
-    def createGraph(self,priceArrayIn,dateArrayIn):
-        plt.plot(dateArrayIn,priceArrayIn)
-        plt.xlabel("Time")
-        plt.ylabel("Price")
-        plt.show()
+    def createGraph(self,priceArrayIn,open,indexIn):
+        figure = plt.Figure(figsize=(5,2))
+        ax=figure.add_subplot(111)
+        canvas = FigureCanvasTkAgg(figure, tk)
+        canvas.get_tk_widget().grid(row = indexIn*2, column = 3, rowspan = 4, pady = 2, sticky=NW)
+        df = DataFrame(priceArrayIn)
+        df.plot(kind='line',ax=ax)
+        df2 = DataFrame(priceArrayIn)
+        df2['Close']=open
+        df2.plot(kind='line',ax=ax,lineStyle='dotted',color='grey')
         
 if __name__ == '__main__':
     dash = Dashboard()
