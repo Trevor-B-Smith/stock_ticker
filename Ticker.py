@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-tickerArray = ['MSFT','DIS','GOOG','GME','AMC','BB','CLF']
+tickerArray = ['MSFT','DIS','GOOG','GME','AMC','BB','CLF','CLNE','CTXR']
 tk = Tk()
 tk.configure(bg="#1B1B1B")
 tk.title("Stock Tickers for APES")
@@ -18,7 +18,7 @@ class Dashboard:
         self.state = False
         tk.bind("<Escape>", self.toggle_fullscreen)
         self.enumerate_ticker(tickerArray)
-        self.update_ticker_by_row()
+        tk.after(30000,self.update_ticker_by_row())
 
 
     def toggle_fullscreen(self, event=None):
@@ -34,14 +34,14 @@ class Dashboard:
         currPriceStr = "${:,.2f}".format(currPrice)
         differenceStr = "${:,.2f}".format(difference)
         tickerColor = self.get_ticker_color(difference)
-        tickerName = Label(tk, text = ticker, bg="#1B1B1B", fg = "white", font=("Helvetica", 30, "bold"))
-        tickerPrice = Label(tk, text = currPriceStr, bg="#1B1B1B", fg = tickerColor, font = ("Helvetica", 24, "bold"))
-        tickerDiff = Label(tk, text = differenceStr, bg="#1B1B1B", fg = tickerColor, font = ("Helvetica", 20, "bold italic"))
+        tickerName = Label(tk, text = ticker, bg="#1B1B1B", fg = "white", font=("Helvetica", 24, "bold"))
+        tickerPrice = Label(tk, text = currPriceStr, bg="#1B1B1B", fg = tickerColor, font = ("Helvetica", 20, "bold"))
+        tickerDiff = Label(tk, text = differenceStr, bg="#1B1B1B", fg = tickerColor, font = ("Helvetica", 16, "bold italic"))
         self.createGraph(priceArray,openPrice,index,tickerColor)
 
-        tickerName.grid(row = index*2, column = 0, pady = 8, sticky=NW)
-        tickerPrice.grid(row = index*2, column = 1, pady = 8, padx = 164, sticky=E)
-        tickerDiff.grid(row = index*2+1, column = 1, padx = 188, pady=8, sticky=E)
+        tickerName.grid(row = index*2, column = 0, pady = 2, sticky=NW)
+        tickerPrice.grid(row = index*2, column = 1, pady = 2, padx = 164, sticky=E)
+        tickerDiff.grid(row = index*2+1, column = 1, padx = 188, pady=2, sticky=E)
 
     def get_ticker_color(self,difference):
         if float(difference) < 0:
@@ -60,7 +60,7 @@ class Dashboard:
             tickerDiff = tk.grid_slaves(row=index*2+1,column=1)[0]
             tk.grid_slaves(row=index*2,column=2)[0].destroy()
             self.update_ticker_item(tickerName,tickerPrice,tickerDiff,index)
-        tk.after(10000,self.update_ticker_by_row)
+        tk.after(30000,self.update_ticker_by_row)
     
     def update_ticker_item(self,name,priceLabel,diffLabel,indexIn):
         stock = yf.Ticker(name["text"])
@@ -78,18 +78,17 @@ class Dashboard:
         priceLabel['fg']=tickerColor
         diffLabel['fg']=tickerColor
 
-        
         self.createGraph(priceArray,openPrice,indexIn,tickerColor)
 
     def createGraph(self,priceArrayIn,open,indexIn,tickerColor):
         plt.axis('off')
-        figure = plt.Figure(figsize=(2,1))
+        figure = plt.Figure(figsize=(1.3,0.6))
         ax=figure.add_subplot(111)
         ax.axis("off")
         figure.set(facecolor = "#1B1B1B")
         ax.patch.set_alpha(0)
         canvas = FigureCanvasTkAgg(figure, tk)
-        canvas.get_tk_widget().grid(row = indexIn*2, column = 2, rowspan = 2, pady = 8, sticky=W)
+        canvas.get_tk_widget().grid(row = indexIn*2, column = 2, rowspan = 2, pady = 2, sticky=W)
         df = DataFrame(priceArrayIn)
         df.plot(kind='line',ax=ax,color=tickerColor,legend=None)
         df2 = DataFrame(priceArrayIn)
